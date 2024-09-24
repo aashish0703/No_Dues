@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "325043443483",
+    "project_id": "no-dues-cfe51",
+    "storage_bucket": "no-dues-cfe51.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:325043443483:android:5ab7e94d7efad8b1d625be",
+        "android_client_info": {
+          "package_name": "com.example.no_dues"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB3EHCeGXrhdTWBI8fCTe72BaFNoLOu5Ss"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
