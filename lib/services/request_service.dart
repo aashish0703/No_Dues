@@ -1,5 +1,4 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:no_dues/Util/util.dart';
 import 'package:no_dues/models/request.dart';
 
 class RequestService {
@@ -10,18 +9,17 @@ class RequestService {
   }
 
   // Add request to firestore
-  Future<String> addRequest(RequestModel request) async {
+  Future<String?> addRequest(RequestModel request) async {
     try {
       DocumentReference docRef = await requestCollection!.add(request.toMap());
       String requestId = docRef.id;
-      Util.requestId = requestId;
-      print(
-          "[RequestService] Request created with requestId: ${Util.requestId}");
+      // Util.requestId = requestId;
+      print("[RequestService] Request created with requestId: $requestId");
+      return requestId;
     } catch (e) {
       print("[RequestService] Error adding request: $e");
+      return null;
     }
-
-    return "Request added successfully";
   }
 
   // Update a request

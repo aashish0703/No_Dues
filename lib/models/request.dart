@@ -72,7 +72,15 @@ class RequestModel {
               'University Extension Library': 'Pending'
             };
 
-  // empty request
+  // empty request model
+  static RequestModel getEmptyRequestObject() {
+    return RequestModel(
+        studentUid: "",
+        studentName: "",
+        branch: "",
+        submittedOn: DateTime.now().toString(),
+        status: "Pending");
+  }
 
   // Convert RequestModel to Map (for Firestore)
   Map<String, dynamic> toMap() {

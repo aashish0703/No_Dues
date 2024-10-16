@@ -185,6 +185,24 @@ class _ProfilePageState extends State<ProfilePage> {
                 Column(
                   children: [
                     TextFormField(
+                      decoration: styleTextField(
+                          "Enter your department", const Text("Department")),
+                      initialValue: user.department,
+                      onSaved: (newValue) {
+                        user.department = newValue!;
+                      },
+                    ),
+                    const Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text("Leave it empty if you are a Student")),
+                  ],
+                ),
+                const SizedBox(
+                  height: 10,
+                ),
+                Column(
+                  children: [
+                    TextFormField(
                       decoration: styleTextField("Enter your hostel number",
                           const Text("Hostel Number")),
                       initialValue: user.hostel,
@@ -225,24 +243,6 @@ class _ProfilePageState extends State<ProfilePage> {
     );
   }
 
-  // Widget _buildDrawer() {
-  //   return Drawer(
-  //     child: ListView(
-  //       children: [
-  //         const DrawerHeader(child: Text("Profile")),
-  //         ListTile(
-  //           title: const Text("View Profile"),
-  //           onTap: () {
-  //             Navigator.of(context).push(MaterialPageRoute(
-  //               builder: (context) => ProfilePage(),
-  //             ));
-  //           },
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
-
   @override
   Widget build(BuildContext context) {
     if (isProfileUpdated) {
@@ -263,8 +263,9 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         centerTitle: true,
       ),
-      // drawer: _buildDrawer(),
-      body: _buildEditableProfile(),
+      // body: _buildEditableProfile(),
+      body:
+          isProfileUpdated ? _buildReadOnlyProfile() : _buildEditableProfile(),
     );
   }
 }

@@ -21,7 +21,8 @@ class UserModel {
 
   // empty User Object
   static UserModel getEmptyUserObject() {
-    return UserModel(name: "", email: "", role: "", urn: "", hostel: "NA");
+    return UserModel(
+        name: "", email: "", role: "", urn: "", department: "NA", hostel: "NA");
   }
 
   // Convert UserModel to Map (for Firestore)

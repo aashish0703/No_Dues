@@ -20,8 +20,8 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
     super.initState();
 
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
-    Future.delayed(const Duration(seconds: 5), () {
-      Navigator.of(context).pushReplacementNamed("login-student");
+    Future.delayed(const Duration(seconds: 3), () {
+      Navigator.of(context).pushReplacementNamed("/login-student");
     });
 
     FirebaseAuth.instance.authStateChanges().listen((User? user) {
@@ -71,12 +71,5 @@ class _SplashState extends State<Splash> with SingleTickerProviderStateMixin {
         ),
       ),
     );
-    //     body: Center(
-    //         child: Stack(
-    //   children: <Widget>[
-    //     Container(color: const Color(0xFF9D9BB3)),
-    //     const Center(child: Text("No Dues \n Application"))
-    //   ],
-    // )));
   }
 }

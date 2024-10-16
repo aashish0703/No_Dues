@@ -1,5 +1,9 @@
+import "package:cloud_firestore/cloud_firestore.dart";
 import "package:firebase_auth/firebase_auth.dart";
 import "package:flutter/material.dart";
+import "package:no_dues/Util/util.dart";
+import "package:no_dues/models/request.dart";
+import "package:no_dues/services/request_service.dart";
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -9,6 +13,82 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  RequestService service = RequestService();
+  RequestModel request = RequestModel.getEmptyRequestObject();
+  bool showProgress = false;
+
+  // addRequestToDb() async {
+  //   String result = await service.addRequest(request);
+  //   const message = SnackBar(content: Text("REQUEST INITIATED"));
+  //   ScaffoldMessenger.of(context).showSnackBar(message);
+  //   if (result.contains("successfully")) {
+  //     setState(() {
+  //       showProgress = false;
+  //     });
+  //   }
+  // }
+
+  // final User? user = FirebaseAuth.instance.currentUser;
+
+  Future<void> initiateRequest() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      DocumentSnapshot userDoc = await FirebaseFirestore.instance
+          .collection("users")
+          .doc(Util.UID)
+          .get();
+
+      if (userDoc.exists) {
+        final name = userDoc.get("name") ?? "No name";
+        final branch = userDoc.get("branch") ?? "No branch";
+
+        RequestModel request = RequestModel.getEmptyRequestObject();
+
+        // Fill in the necessary user details
+        request.studentUid = user.uid;
+        request.studentName = name;
+        request.branch = branch; // Set the branch from Firestore
+        request.submittedOn = DateTime.now().toString();
+        request.status = "Pending"; // Default status
+      }
+      try {
+        // // Save the request to Firestore
+        // await FirebaseFirestore.instance
+        //     .collection('requests')
+        //     .doc(Util.requestId)
+        //     .set(request.toMap())
+        //     .then((value) {
+        //   print("User data ${request.toMap().toString()} Saved in Firestore");
+        // });
+
+        String? result = await service.addRequest(request);
+        if (result != null) {
+          // Request added successfully
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                  content: Text("Request initiated successfully. ID: $result")),
+            );
+          }
+        } else {
+          // Failed to add request
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Failed to initiate request.")),
+          );
+        }
+        Navigator.pushReplacementNamed(context, "/noduesinitiated");
+      } catch (e) {
+        print("Error adding request to database : $e");
+      }
+    } else {
+      // User document does not exist
+      print("user data not exist");
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("User data not found.")),
+      );
+    }
+  }
+
   AppBar appBar() {
     return AppBar(
       title: const Text("student dashboard"),
@@ -37,9 +117,10 @@ class _HomePageState extends State<HomePage> {
             children: [
               ElevatedButton(
                   onPressed: () {
+                    initiateRequest();
                     // Navigator.pushReplacement(context, '/noduesinitiated');
-                    Navigator.of(context)
-                        .pushReplacementNamed("/noduesinitiated");
+                    // Navigator.of(context)
+                    //     .pushReplacementNamed("/noduesinitiated");
                   },
                   child: const Text("Initiate Request")),
               const SizedBox(
