@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:no_dues/pages/department_dash.dart';
 import 'package:no_dues/pages/login_department.dart';
 import 'package:no_dues/pages/login_student.dart';
 import 'package:no_dues/pages/home_page.dart';
@@ -29,7 +30,8 @@ class MainApp extends StatelessWidget {
         "/login-department": (context) => const LoginDepartment(),
         "/profilepage": (context) => const ProfilePage(),
         "/home": (context) => const HomePage(),
-        "/noduesinitiated": (context) => const NoDuesInitiated()
+        "/noduesinitiated": (context) => const NoDuesInitiated(),
+        "/department-dash": (context) => const DepartmentDash()
       },
     );
   }

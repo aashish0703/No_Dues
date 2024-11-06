@@ -42,7 +42,7 @@ class _HomePageState extends State<HomePage> {
         final name = userDoc.get("name") ?? "No name";
         final branch = userDoc.get("branch") ?? "No branch";
 
-        RequestModel request = RequestModel.getEmptyRequestObject();
+        // RequestModel request = RequestModel.getEmptyRequestObject();
 
         // Fill in the necessary user details
         request.studentUid = user.uid;

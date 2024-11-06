@@ -64,7 +64,7 @@ class _LoginDepartmentState extends State<LoginDepartment> {
 
           // Navigate to Student Dashboard
           // Navigator.pushReplacementNamed(context, '/home');
-          Navigator.of(context).pushReplacementNamed("/home");
+          Navigator.of(context).pushReplacementNamed("/department-dash");
         }
         print(
             "User Sign in with : Email: ${emailController.text.trim()} | Password: ${passwordController.text.trim()}");
