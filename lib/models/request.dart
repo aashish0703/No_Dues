@@ -42,6 +42,7 @@
 // }
 
 class RequestModel {
+  String id; // Firestore Document ID
   String studentUid;
   String studentName;
   String branch; // Student's branch
@@ -50,6 +51,7 @@ class RequestModel {
   String status; // Overall request status (Pending, Approved, Rejected)
 
   RequestModel({
+    required this.id,
     required this.studentUid,
     required this.studentName,
     required this.branch,
@@ -58,23 +60,24 @@ class RequestModel {
     Map<String, String>? approvals,
   }) : approvals = approvals ??
             {
-              'HOD': 'Pending',
+              'hod': 'Pending',
               'adviser': 'Pending',
-              'Fee Clerk (UG)': 'Pending',
-              'Academic Clerk (PG)': 'Pending',
-              'Library': 'Pending',
-              'Chief Warden': 'Pending',
-              'Care Taker': 'Pending',
-              'Mess Accountant': 'Pending',
-              'Program Coordinator (PG)': 'Pending',
-              'Record Keeper': 'Pending',
-              'Supdt (A/c)': 'Pending',
-              'University Extension Library': 'Pending'
+              'fee clerk (UG)': 'Pending',
+              'academic clerk (PG)': 'Pending',
+              'library': 'Pending',
+              'chief warden': 'Pending',
+              'care taker': 'Pending',
+              'mess accountant': 'Pending',
+              'program coordinator (PG)': 'Pending',
+              'record keeper': 'Pending',
+              'supdt (A/c)': 'Pending',
+              'university extension library': 'Pending'
             };
 
   // empty request model
   static RequestModel getEmptyRequestObject() {
     return RequestModel(
+        id: '', // Empty ID for the empty object
         studentUid: "",
         studentName: "",
         branch: "",
@@ -95,8 +98,9 @@ class RequestModel {
   }
 
   // Create RequestModel from Firestore Map
-  factory RequestModel.fromMap(Map<String, dynamic> map) {
+  factory RequestModel.fromMap(Map<String, dynamic> map, String id) {
     return RequestModel(
+      id: id, // Assign the document ID to the id field
       studentUid: map['studentUid'],
       studentName: map['studentName'],
       branch: map['branch'],

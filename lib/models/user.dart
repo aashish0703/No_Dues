@@ -8,6 +8,7 @@ class UserModel {
   String? branch; // Optional, applicable for students
   String? department; // Optional, applicable for HOD, Advisor
   bool isProfileUpdated; // New flag to track profile update status
+  // int noDuesStatus = 0;
 
   UserModel(
       {required this.name,
@@ -17,12 +18,21 @@ class UserModel {
       this.hostel,
       this.branch,
       this.department,
+      // required this.noDuesStatus,
       this.isProfileUpdated = false});
 
   // empty User Object
   static UserModel getEmptyUserObject() {
     return UserModel(
-        name: "", email: "", role: "", urn: "", department: "NA", hostel: "NA");
+      name: "",
+      email: "",
+      role: "",
+      branch: "NA",
+      urn: "NA",
+      department: "NA",
+      hostel: "NA",
+      // noDuesStatus: 0
+    );
   }
 
   // Convert UserModel to Map (for Firestore)
@@ -36,6 +46,7 @@ class UserModel {
       'branch': branch,
       'department': department,
       'isProfileUpdated': isProfileUpdated,
+      // 'noDuesStatus': noDuesStatus
     };
   }
 
@@ -49,7 +60,9 @@ class UserModel {
       hostel: map['hostel'] ?? '',
       branch: map['branch'] ?? '',
       department: map['department'] ?? '',
-      isProfileUpdated: map['isProfileUpdated'] ?? false, // Handle null value
+      isProfileUpdated: map['isProfileUpdated'] ?? false,
+      // noDuesStatus: map['noDuesStatus'] ?? 0,
+      // Handle null value
     );
   }
 }

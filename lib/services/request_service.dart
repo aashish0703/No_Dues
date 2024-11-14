@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:no_dues/Util/util.dart';
 import 'package:no_dues/models/request.dart';
 
 class RequestService {
@@ -23,4 +24,20 @@ class RequestService {
   }
 
   // Update a request
+  Future<void> updateApprovalStatus(
+      String requestId, String userRole, String status) async {
+    try {
+      DocumentReference requestRef = requestCollection!.doc(requestId);
+
+      // Update the `approvals` map field for the specific role
+      await requestRef.update({
+        'approvals.$userRole': status,
+      });
+
+      print("Request updated to $status for role: $userRole");
+    } catch (e) {
+      print("Error updating approval status: $e");
+      throw Exception("Failed to update approval status");
+    }
+  }
 }

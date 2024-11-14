@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:no_dues/Util/util.dart';
@@ -57,20 +58,75 @@ class _LoginDepartmentState extends State<LoginDepartment> {
                 email: emailController.text.trim(),
                 password: passwordController.text.trim());
 
-        if (mounted) {
-          // Snackbar after successful login
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text("Login Successful")));
+        if (credential.user != null) {
+          // Get the UID of the logged-in user
+          String UID = credential.user!.uid;
+          Util.UID = UID;
+          print("User UID: $UID");
 
-          // Navigate to Student Dashboard
-          // Navigator.pushReplacementNamed(context, '/home');
-          Navigator.of(context).pushReplacementNamed("/department-dash");
+          // Fetch the user data from Firestore
+          final userDoc = await FirebaseFirestore.instance
+              .collection('users')
+              .doc(UID)
+              .get();
+
+          // Check if the user has the "DepartmentAuthority" role
+          const allowedRoles = [
+            'academic clerk (PG)',
+            'care taker',
+            'chief warden',
+            'fee clerk (UG)',
+            'hod',
+            'library',
+            'mess accountant',
+            'program coordinator (PG)',
+            'record keeper',
+            'supdt (A/c)',
+            'university extension library',
+            'adviser'
+          ];
+
+          if (userDoc.exists && allowedRoles.contains(userDoc['role'])) {
+            if (mounted) {
+              // Snackbar after successful login
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Login Successful")),
+              );
+
+              // Navigate to Department Dashboard
+              // Navigator.of(context).pushReplacementNamed("/department-dash");
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                "/department-dash",
+                (Route<dynamic> route) => false,
+              );
+            }
+          } else {
+            // Show error if user is not authorized for the department portal
+            if (mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text("Access Denied: Unauthorized user")),
+              );
+            }
+            // Optional: Navigate to a different page if needed
+            // Navigator.of(context).pushReplacementNamed("/home");
+          }
         }
-        print(
-            "User Sign in with : Email: ${emailController.text.trim()} | Password: ${passwordController.text.trim()}");
-        String UID = credential.user!.uid;
-        Util.UID = UID;
-        print("UID : $UID");
+
+        // if (mounted) {
+        //   // Snackbar after successful login
+        //   ScaffoldMessenger.of(context)
+        //       .showSnackBar(const SnackBar(content: Text("Login Successful")));
+
+        //   // Navigate to Student Dashboard
+        //   // Navigator.pushReplacementNamed(context, '/home');
+        //   Navigator.of(context).pushReplacementNamed("/department-dash");
+        // }
+        // print(
+        //     "User Sign in with : Email: ${emailController.text.trim()} | Password: ${passwordController.text.trim()}");
+        // String UID = credential.user!.uid;
+        // Util.UID = UID;
+        // print("UID : $UID");
       } on FirebaseAuthException catch (e) {
         if (e.code == 'user-not-found') {
           print('No user found for that email.');
