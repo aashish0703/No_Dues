@@ -7,7 +7,7 @@ import 'package:no_dues/pages/home_page.dart';
 import 'package:no_dues/pages/profile_page.dart';
 import 'package:no_dues/pages/splash.dart';
 import 'firebase_options.dart';
-import 'package:no_dues/pages/no_dues_initiated.dart';
+import 'package:no_dues/pages/student_dashboard.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,6 +23,7 @@ class MainApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       initialRoute: "/",
       routes: {
         "/": (context) => const Splash(),
@@ -30,7 +31,7 @@ class MainApp extends StatelessWidget {
         "/login-department": (context) => const LoginDepartment(),
         "/profilepage": (context) => const ProfilePage(),
         "/home": (context) => const HomePage(),
-        "/noduesinitiated": (context) => const NoDuesInitiated(),
+        "/noduesinitiated": (context) => const StudentDashboard(),
         "/department-dash": (context) => const DepartmentDash()
       },
     );
