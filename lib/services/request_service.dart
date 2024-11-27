@@ -25,19 +25,33 @@ class RequestService {
 
   // Update a request
   Future<void> updateApprovalStatus(
-      String requestId, String userRole, String status) async {
-    try {
-      DocumentReference requestRef = requestCollection!.doc(requestId);
-
-      // Update the `approvals` map field for the specific role
-      await requestRef.update({
-        'approvals.$userRole': status,
-      });
-
-      print("Request updated to $status for role: $userRole");
-    } catch (e) {
-      print("Error updating approval status: $e");
-      throw Exception("Failed to update approval status");
-    }
+      String requestId, String userRole, String status,
+      {String? reason}) async {
+    await FirebaseFirestore.instance
+        .collection("requests")
+        .doc(requestId)
+        .update({
+      "approvals.$userRole": status,
+      if (reason != null)
+        "waitingReason.$userRole": reason, // Add reason if provided
+      "status": status,
+    });
   }
+
+  // Future<void> updateApprovalStatus(
+  //     String requestId, String userRole, String status) async {
+  //   try {
+  //     DocumentReference requestRef = requestCollection!.doc(requestId);
+
+  //     // Update the `approvals` map field for the specific role
+  //     await requestRef.update({
+  //       'approvals.$userRole': status,
+  //     });
+
+  //     print("Request updated to $status for role: $userRole");
+  //   } catch (e) {
+  //     print("Error updating approval status: $e");
+  //     throw Exception("Failed to update approval status");
+  //   }
+  // }
 }

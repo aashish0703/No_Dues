@@ -97,7 +97,185 @@ class _StudentDashboardState extends State<StudentDashboard> {
         .get();
   }
 
-  // Future<void> generatePdf(
+  Future<void> generateAndSavePdf(BuildContext context, String studentName,
+      String branch, Map<String, dynamic> approvals) async {
+    final pdf = pw.Document();
+
+    // Load the font
+    final fontData = await rootBundle.load("assets/fonts/Roboto-Regular.ttf");
+    final ttf = pw.Font.ttf(fontData);
+
+    pdf.addPage(
+      pw.Page(
+        build: (pw.Context context) {
+          return pw.Column(
+            crossAxisAlignment: pw.CrossAxisAlignment.start,
+            children: [
+              pw.Text("No Dues Clearance Certificate",
+                  style: pw.TextStyle(
+                      fontSize: 20, fontWeight: pw.FontWeight.bold, font: ttf)),
+              pw.SizedBox(height: 20),
+              pw.Text("Student Name: $studentName",
+                  style: pw.TextStyle(font: ttf)),
+              pw.Text("Branch: $branch", style: pw.TextStyle(font: ttf)),
+              pw.SizedBox(height: 20),
+              pw.Text("Approval Status:",
+                  style:
+                      pw.TextStyle(fontWeight: pw.FontWeight.bold, font: ttf)),
+              ...approvals.entries.map((entry) {
+                return pw.Text("${entry.key}: ${entry.value}",
+                    style: pw.TextStyle(font: ttf));
+              }),
+            ],
+          );
+        },
+      ),
+    );
+
+    try {
+      // Let the user pick a location
+      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
+
+      if (selectedDirectory != null) {
+        // Define the file path
+        final filePath = "$selectedDirectory/no_dues_certificate.pdf";
+
+        // Save the PDF
+        final file = File(filePath);
+        await file.writeAsBytes(await pdf.save());
+
+        // Notify the user
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("PDF saved successfully at $filePath")),
+        );
+      } else {
+        // User canceled the picker
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Save operation canceled.")),
+        );
+      }
+    } catch (e) {
+      // Handle errors
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Failed to save PDF: $e")),
+      );
+    }
+  }
+
+  bool allApproved(Map<String, dynamic> approvals) {
+    // if (approvals.isEmpty) return false;
+    return approvals.values.every((status) => status == "Approved");
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: appBar(),
+      body: FutureBuilder<QuerySnapshot>(
+        future: fetchStudentRequests(FirebaseAuth.instance.currentUser!.uid),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+            return const Center(child: Text("No requests found."));
+          }
+
+          // Fetch the first document (assuming one request per student)
+          var requestData =
+              snapshot.data!.docs.first.data() as Map<String, dynamic>;
+          Map<String, dynamic> approvals =
+              requestData['approvals'] as Map<String, dynamic>;
+          Map<String, dynamic> waitingReasons =
+              requestData['waitingReason'] as Map<String, dynamic>? ?? {};
+
+          String studentName = requestData['studentName'] ?? "Unknown Student";
+          String branch = requestData['branch'] ?? "Unknown Branch";
+
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  itemCount: approvals.keys.length,
+                  itemBuilder: (context, index) {
+                    String authority = approvals.keys.elementAt(index);
+                    String status = approvals[authority];
+
+                    return ListTile(
+                      leading: Icon(
+                        status == "Approved"
+                            ? Icons.check_circle
+                            : status == "Rejected"
+                                ? Icons.cancel
+                                : Icons.hourglass_empty,
+                        color: status == "Approved"
+                            ? Colors.green
+                            : status == "Rejected"
+                                ? Colors.red
+                                : Colors.orange,
+                      ),
+                      title: Text(authority),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Status: $status"),
+                          if (status == "Waiting" &&
+                              waitingReasons.containsKey(authority))
+                            Text("Reason: ${waitingReasons[authority]}",
+                                style: const TextStyle(color: Colors.orange)),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              ElevatedButton(
+                onPressed: () async {
+                  if (allApproved(approvals)) {
+                    // await generateAndSavePdf(
+                    //     context, studentName, branch, approvals);
+                    // ScaffoldMessenger.of(context).showSnackBar(
+                    //   const SnackBar(
+                    //       content: Text("PDF downloaded successfully!")),
+                    // );
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: const Text('Information'),
+                          content: const Text('Contact department clerk'),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                // Close the dialog when button is pressed
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('OK'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                          content: Text("Request not fully approved yet.")),
+                    );
+                  }
+                },
+                child: const Text("Download PDF"),
+              )
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+
+
+// Future<void> generatePdf(
   //     String studentName, String branch, Map<String, dynamic> approvals) async {
   //   final pdf = pw.Document();
 
@@ -177,149 +355,3 @@ class _StudentDashboardState extends State<StudentDashboard> {
   //   await file.writeAsBytes(await pdf.save());
   //   print("PDF saved to: ${file.path}");
   // }
-
-  Future<void> generateAndSavePdf(BuildContext context, String studentName,
-      String branch, Map<String, dynamic> approvals) async {
-    final pdf = pw.Document();
-
-    // Load the font
-    final fontData = await rootBundle.load("assets/fonts/Roboto-Regular.ttf");
-    final ttf = pw.Font.ttf(fontData);
-
-    pdf.addPage(
-      pw.Page(
-        build: (pw.Context context) {
-          return pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              pw.Text("No Dues Clearance Certificate",
-                  style: pw.TextStyle(
-                      fontSize: 20, fontWeight: pw.FontWeight.bold, font: ttf)),
-              pw.SizedBox(height: 20),
-              pw.Text("Student Name: $studentName",
-                  style: pw.TextStyle(font: ttf)),
-              pw.Text("Branch: $branch", style: pw.TextStyle(font: ttf)),
-              pw.SizedBox(height: 20),
-              pw.Text("Approval Status:",
-                  style:
-                      pw.TextStyle(fontWeight: pw.FontWeight.bold, font: ttf)),
-              ...approvals.entries.map((entry) {
-                return pw.Text("${entry.key}: ${entry.value}",
-                    style: pw.TextStyle(font: ttf));
-              }),
-            ],
-          );
-        },
-      ),
-    );
-
-    try {
-      // Let the user pick a location
-      String? selectedDirectory = await FilePicker.platform.getDirectoryPath();
-
-      if (selectedDirectory != null) {
-        // Define the file path
-        final filePath = "$selectedDirectory/no_dues_certificate.pdf";
-
-        // Save the PDF
-        final file = File(filePath);
-        await file.writeAsBytes(await pdf.save());
-
-        // Notify the user
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text("PDF saved successfully at $filePath")),
-        );
-      } else {
-        // User canceled the picker
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Save operation canceled.")),
-        );
-      }
-    } catch (e) {
-      // Handle errors
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Failed to save PDF: $e")),
-      );
-    }
-  }
-
-  bool allApproved(Map<String, dynamic> approvals) {
-    // if (approvals.isEmpty) return false;
-    return approvals.values.every((status) => status == "Approve");
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: appBar(),
-      body: FutureBuilder<QuerySnapshot>(
-        future: fetchStudentRequests(FirebaseAuth.instance.currentUser!.uid),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-          if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
-            return const Center(child: Text("No requests found."));
-          }
-
-          // Fetch the first document (assuming one request per student)
-          var requestData =
-              snapshot.data!.docs.first.data() as Map<String, dynamic>;
-          Map<String, dynamic> approvals =
-              requestData['approvals'] as Map<String, dynamic>;
-          String studentName = requestData['studentName'] ?? "Unknown Student";
-          String branch = requestData['branch'] ?? "Unknown Branch";
-
-          return Column(
-            children: [
-              Expanded(
-                child: ListView.builder(
-                  itemCount: approvals.keys.length,
-                  itemBuilder: (context, index) {
-                    String authority = approvals.keys.elementAt(index);
-                    String status = approvals[authority];
-
-                    return ListTile(
-                      leading: Icon(
-                        status == "Approve"
-                            ? Icons.check_circle
-                            : status == "Rejected"
-                                ? Icons.cancel
-                                : Icons.hourglass_empty,
-                        color: status == "Approve"
-                            ? Colors.green
-                            : status == "Rejected"
-                                ? Colors.red
-                                : Colors.orange,
-                      ),
-                      title: Text(authority),
-                      subtitle: Text("Status: $status"),
-                    );
-                  },
-                ),
-              ),
-              ElevatedButton(
-                onPressed: () async {
-                  if (allApproved(approvals)) {
-                    await generateAndSavePdf(
-                        context, studentName, branch, approvals);
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("PDF downloaded successfully!")),
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                          content: Text("Request not fully approved yet.")),
-                    );
-                  }
-                },
-                child: const Text("Download PDF"),
-              )
-            ],
-          );
-        },
-      ),
-    );
-  }
-}
